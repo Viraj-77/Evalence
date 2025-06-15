@@ -33,8 +33,7 @@ Evalence is a modern, enterprise-ready platform for performance reviews, continu
 ## Environment Setup
 - See `.env.example` files in both `backend/` and `frontend/`.
 
-## Backend Link
-- [Backend Repo/Service – Coming Soon]
+Project remains heavily incomplete as I ran out credits 5 different AI's :(
 
 ---
-_This README will be updated as the project progresses and features are implemented._
+_
