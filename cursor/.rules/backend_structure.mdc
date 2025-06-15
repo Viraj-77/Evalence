@@ -1,0 +1,624 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Performance Review System API Documentation
+
+## 1. Framework & Tech Stack
+
+### Core Technologies
+- **Language**: TypeScript
+- **Framework**: Node.js with NestJS
+- **Database**: PostgreSQL
+- **ORM**: TypeORM or Prisma
+- **Real-time**: Socket.IO (for notifications and live updates)
+- **Authentication**: JWT-based (no OAuth2/SSO)
+- **File Storage**: Firebase Storage (free tier)
+
+### AI/ML Integration
+- **Gemini API**: Review suggestions, summaries, sentiment analysis
+- **Cohere API**: Embeddings and smart search functionality
+
+### Deployment & Documentation
+- **Deployment**: Render (Node.js backend and PostgreSQL database)
+- **API Documentation**: OpenAPI/Swagger (auto-generated from NestJS decorators)
+
+## 2. Database Schema
+
+The system uses PostgreSQL as the primary database. Below is the complete schema with all tables and relationships:
+
+### Core Tables
+
+#### Users & Authentication
+```sql
+-- Users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    employee_id VARCHAR(50) UNIQUE,
+    role VARCHAR(50) NOT NULL DEFAULT 'employee', -- employee, manager, hr, admin
+    department_id INTEGER REFERENCES departments(id),
+    team_id INTEGER REFERENCES teams(id),
+    manager_id INTEGER REFERENCES users(id),
+    hire_date DATE,
+    job_title VARCHAR(100),
+    profile_picture_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- JWT refresh tokens
+CREATE TABLE refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(500) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Organizational Structure
+```sql
+-- Departments
+CREATE TABLE departments (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    head_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Teams
+CREATE TABLE teams (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    department_id INTEGER REFERENCES departments(id),
+    lead_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Goals/OKRs System
+```sql
+-- Goals/OKRs
+CREATE TABLE goals (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(50), -- individual, team, company
+    priority VARCHAR(20) DEFAULT 'medium', -- low, medium, high, critical
+    status VARCHAR(20) DEFAULT 'active', -- active, completed, paused, cancelled
+    progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+    target_value DECIMAL(10,2),
+    current_value DECIMAL(10,2) DEFAULT 0,
+    unit VARCHAR(50), -- %, $, hours, etc.
+    start_date DATE,
+    due_date DATE,
+    completed_at TIMESTAMP,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Goal comments/updates
+CREATE TABLE goal_comments (
+    id SERIAL PRIMARY KEY,
+    goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    comment TEXT NOT NULL,
+    progress_update INTEGER, -- New progress value if this is a progress update
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Goal tags (many-to-many)
+CREATE TABLE goal_tags (
+    goal_id INTEGER REFERENCES goals(id) ON DELETE CASCADE,
+    tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (goal_id, tag_id)
+);
+```
+
+#### Feedback System
+```sql
+-- Feedback
+CREATE TABLE feedback (
+    id SERIAL PRIMARY KEY,
+    giver_id INTEGER NOT NULL REFERENCES users(id),
+    receiver_id INTEGER NOT NULL REFERENCES users(id),
+    type VARCHAR(50) NOT NULL, -- positive, constructive, peer, upward, downward
+    category VARCHAR(100), -- communication, leadership, technical, etc.
+    title VARCHAR(255),
+    content TEXT NOT NULL,
+    is_anonymous BOOLEAN DEFAULT false,
+    sentiment_score DECIMAL(3,2), -- AI-generated sentiment (-1 to 1)
+    is_private BOOLEAN DEFAULT false, -- Only visible to receiver and HR
+    visibility VARCHAR(20) DEFAULT 'private', -- private, team, public
+    status VARCHAR(20) DEFAULT 'active', -- active, archived, flagged
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Feedback tags
+CREATE TABLE feedback_tags (
+    feedback_id INTEGER REFERENCES feedback(id) ON DELETE CASCADE,
+    tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (feedback_id, tag_id)
+);
+```
+
+#### Performance Review System
+```sql
+-- Review cycles (quarterly, annual, etc.)
+CREATE TABLE review_cycles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    self_review_deadline DATE,
+    peer_review_deadline DATE,
+    manager_review_deadline DATE,
+    status VARCHAR(20) DEFAULT 'draft', -- draft, active, completed, cancelled
+    template_id INTEGER REFERENCES review_templates(id),
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Review templates
+CREATE TABLE review_templates (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    template_data JSONB NOT NULL, -- Stores form structure, questions, rating scales
+    is_active BOOLEAN DEFAULT true,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Review assignments
+CREATE TABLE review_assignments (
+    id SERIAL PRIMARY KEY,
+    cycle_id INTEGER NOT NULL REFERENCES review_cycles(id),
+    reviewee_id INTEGER NOT NULL REFERENCES users(id),
+    reviewer_id INTEGER NOT NULL REFERENCES users(id),
+    review_type VARCHAR(50) NOT NULL, -- self, peer, manager, skip_level, subordinate
+    status VARCHAR(20) DEFAULT 'pending', -- pending, in_progress, completed, overdue
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    due_date TIMESTAMP,
+    completed_at TIMESTAMP,
+    UNIQUE(cycle_id, reviewee_id, reviewer_id, review_type)
+);
+
+-- Review responses
+CREATE TABLE review_responses (
+    id SERIAL PRIMARY KEY,
+    assignment_id INTEGER NOT NULL REFERENCES review_assignments(id),
+    response_data JSONB NOT NULL, -- Stores all answers, ratings, comments
+    overall_rating DECIMAL(3,2), -- Overall rating if applicable
+    strengths TEXT,
+    areas_for_improvement TEXT,
+    goals_suggestions TEXT,
+    ai_summary TEXT, -- AI-generated summary
+    is_draft BOOLEAN DEFAULT true,
+    submitted_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Tags & Categorization
+```sql
+-- Tags for categorization
+CREATE TABLE tags (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    color VARCHAR(7), -- Hex color code
+    category VARCHAR(50), -- skill, competency, goal_type, feedback_type
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### File Management
+```sql
+-- File attachments
+CREATE TABLE files (
+    id SERIAL PRIMARY KEY,
+    original_name VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL, -- Stored filename
+    file_path TEXT NOT NULL, -- Firebase storage path
+    file_size INTEGER,
+    mime_type VARCHAR(100),
+    uploaded_by INTEGER REFERENCES users(id),
+    entity_type VARCHAR(50), -- goal, feedback, review, user
+    entity_id INTEGER,
+    is_public BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Notifications System
+```sql
+-- Notifications
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    type VARCHAR(50) NOT NULL, -- review_assigned, goal_due, feedback_received, etc.
+    title VARCHAR(255) NOT NULL,
+    message TEXT,
+    data JSONB, -- Additional context data
+    is_read BOOLEAN DEFAULT false,
+    priority VARCHAR(20) DEFAULT 'medium', -- low, medium, high
+    expires_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Calendar & Events
+```sql
+-- Calendar events
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'hr', 'manager', 'employee')),
+    department_id UUID REFERENCES departments(id),
+    manager_id UUID REFERENCES users(id),
+    is_department_head BOOLEAN DEFAULT false,
+    avatar_url VARCHAR(500),
+    phone VARCHAR(20),
+    hire_date DATE,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP WITH TIME ZONE,
+    password_reset_token_hash VARCHAR(255),
+    password_reset_token_expiry TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT check_department_head CHECK (
+        (is_department_head = false) OR 
+        (is_department_head = true AND role = 'manager' AND department_id IS NOT NULL)
+    )
+);
+```
+
+#### Search & Analytics
+```sql
+-- Search embeddings for AI-powered search
+CREATE TABLE search_embeddings (
+    id SERIAL PRIMARY KEY,
+    entity_type VARCHAR(50) NOT NULL, -- feedback, goal, review
+    entity_id INTEGER NOT NULL,
+    content_text TEXT NOT NULL,
+    embedding VECTOR(1536), -- Cohere embedding vector
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Analytics tracking
+CREATE TABLE analytics_events (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    event_type VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50),
+    entity_id INTEGER,
+    properties JSONB,
+    session_id VARCHAR(100),
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Indexes for Performance
+```sql
+-- Essential indexes
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_employee_id ON users(employee_id);
+CREATE INDEX idx_users_department ON users(department_id);
+CREATE INDEX idx_users_manager ON users(manager_id);
+
+CREATE INDEX idx_goals_user ON goals(user_id);
+CREATE INDEX idx_goals_status ON goals(status);
+CREATE INDEX idx_goals_due_date ON goals(due_date);
+
+CREATE INDEX idx_feedback_receiver ON feedback(receiver_id);
+CREATE INDEX idx_feedback_giver ON feedback(giver_id);
+CREATE INDEX idx_feedback_created ON feedback(created_at);
+
+CREATE INDEX idx_review_assignments_reviewee ON review_assignments(reviewee_id);
+CREATE INDEX idx_review_assignments_reviewer ON review_assignments(reviewer_id);
+CREATE INDEX idx_review_assignments_cycle ON review_assignments(cycle_id);
+CREATE INDEX idx_review_assignments_status ON review_assignments(status);
+
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_notifications_unread ON notifications(user_id, is_read) WHERE is_read = false;
+
+CREATE INDEX idx_analytics_events_user ON analytics_events(user_id);
+CREATE INDEX idx_analytics_events_type ON analytics_events(event_type);
+CREATE INDEX idx_analytics_events_created ON analytics_events(created_at);
+```
+
+### Key Relationships
+- Users belong to departments and teams
+- Users can have managers (self-referencing relationship)
+- Goals can be assigned to users and tagged
+- Feedback flows between users with sentiment analysis
+- Review cycles contain multiple assignments
+- Reviews follow templates and store responses as JSONB
+- Files can be attached to various entities
+- Notifications keep users informed of system events
+- Search embeddings enable AI-powered content discovery
+
+## 3. Third-Party Integrations
+
+### Firebase Storage
+- Upload and serve supporting documents
+- Store goals, feedback, and review attachments
+- Utilizes free tier for cost optimization
+
+### Gemini API
+- Generate intelligent review suggestions
+- Create automated summaries
+- Perform sentiment analysis on feedback
+
+### Cohere API
+- Generate embeddings for semantic search
+- Enable smart search across reviews and feedback
+- Power recommendation systems
+
+### Render Platform
+- Host Node.js backend application
+- Managed PostgreSQL database hosting
+- Scalable deployment infrastructure
+
+## 4. API Design
+
+### General Principles
+- RESTful, resource-based endpoints
+- JWT authentication for all endpoints (except login/register)
+- Role-based access control implementation
+- OpenAPI/Swagger documentation auto-generation
+- Real-time events via Socket.IO integration
+
+---
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | User login, returns JWT token |
+| POST | `/api/auth/register` | User self-registration (if enabled) |
+| GET | `/api/auth/me` | Get current authenticated user information |
+
+#### Example Login Request
+```json
+{
+  "email": "user@company.com",
+  "password": "securepassword"
+}
+```
+
+#### Example Login Response
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "email": "user@company.com",
+    "name": "John Doe",
+    "role": "employee"
+  }
+}
+```
+
+### Users Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users` | List users (admin/hr only) |
+| GET | `/api/users/:id` | Get specific user profile |
+| POST | `/api/users` | Create new user (admin/hr) |
+| PUT | `/api/users/:id` | Update user information |
+| DELETE | `/api/users/:id` | Deactivate/delete user account |
+
+### Departments & Teams
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/departments` | List all departments |
+| POST | `/api/departments` | Create new department (admin) |
+| PUT | `/api/departments/:id` | Update department information |
+| GET | `/api/teams` | List all teams |
+| POST | `/api/teams` | Create new team |
+| PUT | `/api/teams/:id` | Update team information |
+
+### Tags Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tags` | List tags with optional filters |
+| POST | `/api/tags` | Create new tag (admin/hr) |
+| PUT | `/api/tags/:id` | Update existing tag |
+
+### Goals/OKRs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/goals` | List goals with filtering options |
+| POST | `/api/goals` | Create new goal |
+| PUT | `/api/goals/:id` | Update existing goal |
+| POST | `/api/goals/:id/comments` | Add comment/progress update |
+| GET | `/api/goals/:id/comments` | List all comments for a goal |
+
+### Feedback System
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/feedback` | List feedback with filtering options |
+| POST | `/api/feedback` | Submit new feedback |
+| PUT | `/api/feedback/:id` | Edit feedback (if permissions allow) |
+| GET | `/api/feedback/:id` | View specific feedback |
+
+### Performance Reviews
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/review-cycles` | List all review cycles |
+| POST | `/api/review-cycles` | Create new review cycle |
+| PUT | `/api/review-cycles/:id` | Update review cycle |
+| GET | `/api/review-templates` | List available templates |
+| POST | `/api/review-templates` | Create new template |
+| GET | `/api/review-assignments` | List review assignments |
+| POST | `/api/review-assignments/:id/response` | Submit review response |
+
+### Reviewer Workload
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/review-assignments?status=pending&reviewer=...` | List pending reviews for specific reviewer |
+
+### File Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/files/upload` | Upload file to Firebase Storage |
+| GET | `/api/files/:id` | Get file metadata and access URL |
+
+### Smart Search
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/search/embeddings` | Perform semantic search using Cohere embeddings |
+
+### Notifications
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/notifications` | List notifications for current user |
+| POST | `/api/notifications/mark-read` | Mark notifications as read |
+
+### Calendar Integration
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/calendar` | List calendar events for user |
+| POST | `/api/calendar` | Create new event (admin/hr) |
+
+### Analytics & Reporting
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/analytics` | Get analytics dashboard data |
+
+---
+
+## Real-Time Communication (Socket.IO)
+
+### WebSocket Events
+
+The system provides real-time updates through Socket.IO with the following events:
+
+- **`notification`** — Push new notifications to users
+- **`goal-updated`** — Real-time goal progress updates
+- **`review-assigned`** — Notify when a review is assigned
+
+### Authentication
+- JWT token sent on WebSocket connection for user identification
+- Real-time authorization based on user roles and permissions
+
+---
+
+## API Documentation
+
+### Swagger/OpenAPI
+- **Endpoint**: `/api/docs`
+- Auto-generated documentation from NestJS decorators
+- Complete endpoint documentation with request/response schemas
+- Error code documentation and examples
+
+### Features
+- Interactive API testing interface
+- Request/response examples
+- Authentication flow documentation
+- Error handling examples
+
+---
+
+## Validation & Error Handling
+
+### Input Validation
+- DTOs (Data Transfer Objects) for request validation
+- NestJS validation pipes for automatic input sanitization
+- Type-safe request/response handling
+
+### Error Responses
+Consistent error response format:
+```json
+{
+  "error": "Descriptive error message",
+  "statusCode": 400,
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+### Common HTTP Status Codes
+- **200**: Success
+- **201**: Created
+- **400**: Bad Request
+- **401**: Unauthorized
+- **403**: Forbidden
+- **404**: Not Found
+- **500**: Internal Server Error
+
+---
+
+## Security Considerations
+
+### Authentication & Authorization
+- JWT-based authentication for stateless operations
+- Role-based access control (RBAC)
+- Secure password hashing
+- Token expiration and refresh mechanisms
+
+### Data Protection
+- Input validation and sanitization
+- SQL injection prevention through ORM
+- XSS protection
+- CORS configuration for frontend integration
+
+---
+
+## Performance Optimization
+
+### Caching Strategy
+- Database query optimization
+- Redis caching for frequently accessed data
+- CDN for static file delivery through Firebase
+
+### Database Optimization
+- Proper indexing strategy
+- Query optimization
+- Connection pooling
+- Pagination for large datasets
+
+---
+
+
+This documentation provides a comprehensive overview of the Performance Review System API. For detailed implementation examples and advanced configuration, refer to the individual endpoint documentation in the Swagger interface.

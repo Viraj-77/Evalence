@@ -1,0 +1,93 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Evalence – Manager User Journey
+Page 1: Login
+* Action:
+* Manager logs in with email and password.
+* On success, redirected to Manager Dashboard.
+* Edge Cases:
+* Wrong credentials: show error.
+* Password forgotten: Manager can use a secure password reset flow (request reset link via email, set new password via time-limited token).
+Page 2: Manager Dashboard (Landing Page)
+* Content:
+* High-level stats for all teams managed by the manager: number of direct/indirect reports, team OKR progress, active review cycles, pending tasks.
+* Quick links/CTAs: Assign Goal, Give Feedback, Start Review (if permitted).
+* System alerts relevant to their teams (e.g., storage limits).
+* Edge Cases:
+* If no data exists, show empty states with CTAs.
+* If system alert, show error message.
+Page 3: Team Overview
+* Actions:
+* View all teams managed by the manager.
+* View team members, their roles, and statuses.
+* Edge Cases:
+* If a team has no members, show empty state.
+* If a team is deleted, manager loses access to that team’s data.
+Page 4: Direct/Indirect Reports
+* Actions:
+* View all direct and indirect reports (users in teams managed by the manager).
+* View user profiles, performance, and feedback history (as permitted).
+* Edge Cases:
+* If a report is removed from all teams managed by the manager, they disappear from the manager’s view.
+Page 5: Goal/OKR Management
+* Actions:
+* View, create, edit, and track goals/OKRs for their teams and individual reports.
+* Assign goals to teams or individuals within their teams.
+* Comment on progress, update status.
+* Edge Cases:
+* Cannot assign goals to users outside their teams.
+* If a team is deleted, associated goals are deleted.
+Page 6: Feedback Management
+* Actions:
+* Give feedback to any direct/indirect report in their teams.
+* View feedback they have given or received.
+* View public feedback for their teams.
+* Edge Cases:
+* Cannot view private feedback not addressed to or from them.
+* If a report leaves the team, their feedback history is no longer accessible to the manager.
+Page 7: Review Cycle Participation
+* Actions:
+* Participate in review cycles as a reviewer (manager, peer, or upward reviews).
+* View review assignments for their teams.
+* Complete reviews for direct/indirect reports.
+* View review results for their teams (as permitted).
+* Edge Cases:
+* Cannot edit review templates or cycles.
+* Cannot see reviews outside their reporting chain.
+Page 8: Reviewer Workload Manager
+* Actions:
+* View all pending review tasks assigned to themselves and their direct reports.
+* Track completion status for reviews in their teams.
+* Edge Cases:
+* If a review assignment is cancelled, it disappears from the workload manager.
+Page 9: Analytics & Reports
+* Actions:
+* View analytics dashboards for their teams: OKR progress, feedback volume, review completion, sentiment trends.
+* Export team data as CSV/PDF.
+* Edge Cases:
+* If no data, show empty state.
+* If export fails, show error and allow retry.
+Page 10: File Uploads
+* Actions:
+* View/manage uploaded files (for goals, feedback, reviews) for their teams.
+* Edge Cases:
+* If a file is deleted but referenced, show “missing file.”
+* If storage limit is reached, display error.
+Page 11: Notifications & Calendar
+* Actions:
+* View all system notifications relevant to their teams.
+* View/manage calendar events (deadlines, review cycles) for their teams.
+* Edge Cases:
+* If a notification references a deleted entity, show “entity deleted.”
+* Past calendar events are shown as-is.
+Other System Behaviors
+* System Alerts:
+* Any system-level issues (e.g., storage full, failed integration) are shown as error messages.
+* Bulk Actions:
+* (Optional) Bulk goal/feedback management if implemented.
+* No Audit Trail:
+
+* No audit logs required as per requirements.

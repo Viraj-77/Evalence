@@ -1,0 +1,268 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Phase 1: Project Setup & Core Infrastructure
+Tasks
+[ ] Initialize monorepo (backend + frontend)
+[ ] Set up Git repository and .gitignore
+[ ] Create .env.example for backend and frontend
+[ ] Configure environment variable management (dotenv)
+[ ] Set up Prettier and ESLint for both backend and frontend
+[ ] Set up commit linting and pre-commit hooks
+[ ] Add basic README.md with setup instructions
+[ ] Set up Render PostgreSQL instance (get connection string)
+[ ] Configure backend to connect to Render PostgreSQL
+[ ] Set up Render Node.js backend service
+[ ] Set up Render frontend service (React + MUI)
+[ ] Configure CI/CD for both frontend and backend (Render deploy hooks)
+[ ] Add codeowners and contribution guidelines
+Test Cases
+[ ] Verify monorepo structure is correct
+[ ] Confirm .env files are loaded in both backend and frontend
+[ ] Linting and formatting work for all code
+[ ] Render PostgreSQL is accessible from backend
+[ ] Both backend and frontend deploy successfully to Render
+[ ] CI/CD pipeline triggers on push and deploys latest code
+Phase 2: Authentication & User Management
+Backend
+[ ] Set up NestJS project structure
+[ ] Install and configure TypeORM/Prisma for PostgreSQL
+[ ] Create User entity/model
+[ ] Create migration for users table
+[ ] Implement password hashing (bcrypt)
+[ ] Create user registration endpoint
+[ ] Validate email format and uniqueness
+[ ] Validate password strength
+[ ] Store hashed password in DB
+[ ] Create login endpoint
+[ ] Implement JWT token generation
+[ ] Implement JWT refresh token logic
+[ ] Create logout endpoint (invalidate refresh token)
+[ ] Create password reset request endpoint
+[ ] Generate and store password reset token
+[ ] Send password reset email (ask for email provider/API key)
+[ ] Create password reset confirmation endpoint
+[ ] Implement token expiry logic
+[ ] Create user profile endpoint (GET/PUT)
+[ ] Implement role-based access middleware
+[ ] Create endpoints for role assignment (Admin only)
+[ ] Write unit tests for all endpoints
+[ ] Write integration tests for auth flows
+[ ] Add error handling for all endpoints
+[ ] Document all endpoints in Swagger
+Frontend
+[ ] Set up React project structure
+[ ] Install MUI and configure theme
+[ ] Create login page UI
+[ ] Create registration page UI
+[ ] Create password reset request page UI
+[ ] Create password reset confirmation page UI
+[ ] Create user profile page UI
+[ ] Add form validation for all auth forms
+[ ] Connect forms to backend endpoints
+[ ] Store JWT in secure storage (httpOnly cookie/localStorage)
+[ ] Implement auth context/provider
+[ ] Implement protected routes (role-based)
+[ ] Show error messages for failed logins/invalid tokens
+[ ] Show success messages for registration/reset
+[ ] Add loading states to all forms
+[ ] Write unit tests for all components
+[ ] Write e2e tests for auth flows
+DevOps/Config
+[ ] Add .env.example for backend and frontend
+[ ] Configure Render environment variables
+[ ] Set up Render deploy hooks for backend
+[ ] Set up Render deploy hooks for frontend
+[ ] Add health check endpoint for backend
+[ ] Add README instructions for auth setup
+Test Cases
+[ ] Register user and verify in DB
+[ ] Login with valid/invalid credentials
+[ ] JWT and refresh token flow works
+[ ] Password reset flow works (email sent, token expires)
+[ ] Role-based access control enforced
+[ ] All auth pages render and validate correctly
+[ ] All endpoints covered by unit/integration tests
+Phase 3: Organization Structure & Team Management
+Backend
+[ ] Create Department entity/model
+[ ] Create Team entity/model
+[ ] Create migrations for departments and teams
+[ ] Department CRUD endpoints (Admin only)
+[ ] Team CRUD endpoints (Admin/HR)
+[ ] Assign users to departments/teams endpoints
+[ ] Implement manager-report chain (manager_id field)
+[ ] Department head assignment logic
+[ ] Org chart API endpoint
+[ ] Add error handling for all endpoints
+[ ] Write unit/integration tests for org structure endpoints
+[ ] Document endpoints in Swagger
+Frontend
+[ ] Create department management UI (Admin)
+[ ] Create team management UI (Admin/HR)
+[ ] UI for assigning users to departments/teams
+[ ] UI for manager-report chain
+[ ] Org chart UI (Admin/HR/Manager)
+[ ] Department head assignment UI
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for org management
+Test Cases
+[ ] Create, update, delete departments/teams
+[ ] Assign users to teams/departments
+[ ] Assign and change department head
+[ ] Org chart displays correct hierarchy
+[ ] All endpoints and UI covered by tests
+Phase 4: Goal/OKR Management
+Backend
+[ ] Create Goal entity/model
+[ ] Create migration for goals table
+[ ] Goal CRUD endpoints (team, individual)
+[ ] Assign goals to teams/users endpoints
+[ ] Tagging system (predefined, department-specific)
+[ ] Progress tracking endpoints (comments, updates)
+[ ] Goal filtering/search endpoints
+[ ] Add error handling for all endpoints
+[ ] Write unit/integration tests for goal endpoints
+[ ] Document endpoints in Swagger
+Frontend
+[ ] Create goal management UI (Manager/Employee)
+[ ] UI for assigning goals to teams/users
+[ ] Tagging/filtering UI
+[ ] Progress update/comment UI
+[ ] Goal search/filter UI
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for goal management
+Test Cases
+[ ] Create, update, delete goals
+[ ] Assign goals to teams/users
+[ ] Tag and filter goals
+[ ] Progress updates/comments work
+[ ] All endpoints and UI covered by tests
+Phase 5: Continuous Feedback
+Backend
+[ ] Create Feedback entity/model
+[ ] Create migration for feedback table
+[ ] Feedback CRUD endpoints (text-only, single-message)
+[ ] Feedback visibility logic (private/public)
+[ ] Tagging system for feedback
+[ ] File upload endpoint (Firebase Storage integration)
+[ ] Real-time notifications (Socket.IO)
+[ ] Add error handling for all endpoints
+[ ] Write unit/integration tests for feedback endpoints
+[ ] Document endpoints in Swagger
+Frontend
+[ ] Create feedback UI (give, view, filter feedback)
+[ ] UI for feedback visibility (private/public)
+[ ] Tagging/filtering UI
+[ ] File upload UI (Firebase)
+[ ] Real-time notification UI
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for feedback
+Test Cases
+[ ] Give, view, and filter feedback
+[ ] File upload and retrieval works
+[ ] Real-time notifications received
+[ ] All endpoints and UI covered by tests
+Phase 6: Performance Reviews (360°)
+Backend
+[ ] Create ReviewCycle, ReviewTemplate, ReviewAssignment, ReviewResponse entities/models
+[ ] Create migrations for review tables
+[ ] Review cycle CRUD endpoints (Admin only)
+[ ] Review assignment logic (self, peer, manager, upward)
+[ ] Review templates endpoints (configurable, reusable)
+[ ] Review response endpoints
+[ ] Anonymity rules for peer reviews
+[ ] Reviewer workload dashboard endpoint
+[ ] Add error handling for all endpoints
+[ ] Write unit/integration tests for review endpoints
+[ ] Document endpoints in Swagger
+Frontend
+[ ] Create review cycle management UI (Admin)
+[ ] Review participation UI (all roles)
+[ ] Review results/status UI
+[ ] Reviewer workload dashboard UI (Manager/HR)
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for reviews
+Test Cases
+[ ] Create, update, delete review cycles/templates
+[ ] Assign and complete reviews (all types)
+[ ] Anonymity rules enforced
+[ ] Reviewer workload dashboard accurate
+[ ] All endpoints and UI covered by tests
+Phase 7: Analytics & Dashboards
+Backend
+[ ] Create analytics endpoints (team, department, employee)
+[ ] Filtering endpoints (department, team, role, tag)
+[ ] Export endpoints (CSV/PDF)
+[ ] Add error handling for all endpoints
+[ ] Write unit/integration tests for analytics endpoints
+[ ] Document endpoints in Swagger
+Frontend
+[ ] Create dashboard UI (role-based views)
+[ ] Filtering UI
+[ ] Export UI (CSV/PDF)
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for dashboards
+Test Cases
+[ ] Analytics endpoints return correct data
+[ ] Filtering and export work as expected
+[ ] Dashboards display correct data for each role
+[ ] All endpoints and UI covered by tests
+Phase 8: AI-Powered Features
+Backend
+[ ] Integrate Gemini API for peer review draft generator (ask for key)
+[ ] Integrate Gemini API for self-assessment summarizer
+[ ] Integrate Cohere API for smart search (ask for key)
+[ ] AI-powered feedback sentiment scoring
+[ ] Add error handling for all endpoints
+[ ] Write unit/integration tests for AI features
+[ ] Document endpoints in Swagger
+Frontend
+[ ] UI for AI-powered draft suggestions
+[ ] UI for self-assessment summaries
+[ ] UI for smart search
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for AI features
+Test Cases
+[ ] AI draft suggestions work (with valid key)
+[ ] Self-assessment summaries generated
+[ ] Smart search returns relevant results
+[ ] All endpoints and UI covered by tests
+Phase 9: Branding, UI/UX, and Theming
+Frontend
+[ ] Use MUI (Material UI) for theming
+[ ] Typography-based logo ("Evalence")
+[ ] Color palette, spacing, and style inspired by Lattice.com
+[ ] Responsive, accessible design
+[ ] Custom icon set
+[ ] Dark mode
+[ ] Theme customization by Admin (optional)
+[ ] Add loading, error, and empty states
+[ ] Write unit/e2e tests for theming
+Test Cases
+[ ] All pages use correct theme/colors
+[ ] Logo displays as typography
+[ ] Responsive and accessible on all devices
+[ ] Dark mode works
+[ ] All UI covered by tests
+Phase 10: Deployment, Monitoring, and Documentation
+DevOps/Config
+[ ] Backend deployment on Render (Node.js, PostgreSQL)
+[ ] Frontend deployment on Render (or Vercel/Netlify if preferred)
+[ ] Environment variable setup for all services
+[ ] API documentation (Swagger/OpenAPI)
+[ ] User/admin documentation (basic usage guides)
+[ ] Monitoring and error alerting (Render, Sentry, or similar)
+[ ] Automated backups for PostgreSQL
+[ ] Health check endpoints
+[ ] Blue/green deployment setup (optional)
+[ ] Add README instructions for deployment/monitoring
+Test Cases
+[ ] Backend and frontend deploy successfully
+[ ] All environment variables loaded correctly
+[ ] API docs accessible and up to date
+[ ] Monitoring/alerts trigger on error
+
+[ ] Backups and health checks work

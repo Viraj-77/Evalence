@@ -1,0 +1,225 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 🎨 Frontend Design System
+
+# Evalence – AI-Driven Performance Review Platform
+
+## Overview
+
+Let's define a **Frontend Design System** for Evalence, based on the design principles and aesthetic of Lattice.com. The goal is to inherit the **modern, clean, people-first, and enterprise-ready** visual tone while tailoring the system for your product.
+
+### Brand Identity
+- **Brand Personality:** Modern, clean, professional, people-centric, trustworthy, enterprise-ready
+- **Tone:** Friendly, clear, supportive, high-clarity
+- **UI Style:** Grid-based layout, generous whitespace, bold CTAs, clean form inputs, rounded corners, subtle shadows
+
+We'll build this using **React** (with MUI or styled-components) and a strict **sans-serif font** stack.
+
+---
+
+## 🎯 1. Primary & Secondary Colors
+
+| Role | Hex Code | Notes |
+|------|----------|-------|
+| **Primary** | `#2D3A8C` | Deep blue – main actions, highlights |
+| **Secondary** | `#FFD600` | Vibrant yellow – accents, highlights |
+
+---
+
+## 🎨 2. Color Palette
+
+| Role | Hex Code | Use For |
+|------|----------|---------|
+| **Primary** | `#2D3A8C` | CTAs, links, highlights |
+| **Secondary** | `#FFD600` | Accents, highlights |
+| **Background** | `#F7F8FA` | App background |
+| **Surface** | `#FFFFFF` | Cards, modals, surfaces |
+| **Text Primary** | `#1A1A1A` | Main text |
+| **Text Secondary** | `#4F4F4F` | Subtext, labels |
+| **Border** | `#E0E0E0` | Card borders, dividers |
+| **Success** | `#2DB67C` | Success states |
+| **Warning** | `#FFB300` | Warnings |
+| **Error** | `#E53E3E` | Errors |
+| **Info** | `#2D9CDB` | Info messages |
+
+---
+
+## 🅰️ 3. Typography
+
+| Type | Font Name | Notes |
+|------|-----------|-------|
+| **All** | Sans-serif | Use 'Inter', 'Segoe UI', Arial, sans-serif. Clean, modern, highly readable. |
+
+### CSS Example:
+```css
+font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+```
+
+---
+
+## 📏 4. Spacing System
+
+- **Base unit:** 8px (industry standard, matches Lattice's modular look)
+- **Scale:** 4, 8, 16, 24, 32, 40, 48, 64px
+- **Usage:** Padding, margin, grid gaps, etc.
+
+---
+
+## 🧩 5. UI Patterns
+
+| Pattern Type | Reference/Notes |
+|--------------|-----------------|
+| **Cards** | White background, soft shadow, rounded corners |
+| **Modals** | Centered, rounded, with dimmed background |
+| **Tabs** | For dashboard/profile navigation |
+| **Side Nav** | Persistent sidebar for main app navigation |
+| **Top Bar** | For global actions, search, user menu |
+| **Buttons** | Rounded, bold, clear primary/secondary distinction |
+| **Tables** | For analytics, reviews, feedback, with zebra striping |
+| **Chips/Tags** | For tags, statuses, filters |
+| **Avatars** | For users, with initials fallback |
+| **Progress Bars** | For OKR/goal progress |
+| **Alerts/Toasts** | For notifications and feedback |
+
+---
+
+## 🖼️ 6. Icons
+
+| Style | Library | Notes |
+|-------|---------|-------|
+| Line/Geometric | **Lucide** | Modern, open-source, clean, matches Lattice style |
+
+### Usage Example:
+```jsx
+import { User, CheckCircle, AlertTriangle } from "lucide-react";
+
+<User size={24} color="#2D3A8C" />
+<CheckCircle size={20} color="#2DB67C" />
+<AlertTriangle size={20} color="#FFB300" />
+```
+
+---
+
+## 🖌️ 7. Design References
+
+- @Lattice.com – visual inspiration, color, and UI patterns
+- @Lattice Product Tour
+- @Material UI (MUI) Docs
+- @Lucide Icons
+- @Inter Font
+- @Coolors Color Palette Generator
+
+---
+
+## 🛠️ 8. Example Component Style Guide
+
+### ✅ Button (Primary)
+```jsx
+<Button
+  style={{
+    backgroundColor: '#2D3A8C',
+    color: '#fff',
+    borderRadius: 8,
+    padding: '12px 24px',
+    fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
+    fontWeight: 600
+  }}
+>
+  Submit
+</Button>
+```
+
+### ✅ Card
+```jsx
+<div style={{
+  background: '#fff',
+  borderRadius: 16,
+  boxShadow: '0 2px 8px rgba(44, 62, 80, 0.08)',
+  padding: 24,
+  fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif"
+}}>
+  {/* Card content */}
+</div>
+```
+
+### ✅ Input
+```jsx
+<input
+  style={{
+    border: '1px solid #E0E0E0',
+    borderRadius: 8,
+    padding: '12px 16px',
+    fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif"
+  }}
+  placeholder="Enter value"
+/>
+```
+
+### ✅ Status Badge
+```jsx
+<span style={{
+  background: '#F7F8FA',
+  color: '#2D3A8C',
+  borderRadius: 12,
+  padding: '4px 12px',
+  fontSize: 12,
+  fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif"
+}}>
+  Active
+</span>
+```
+
+---
+
+## 💻 Frontend Technology Stack
+
+| Area | Library/Tool |
+|------|--------------|
+| **Framework** | React (with Vite or Next.js) |
+| **Styling** | MUI (Material UI) or styled-components |
+| **Icons** | Lucide (lucide-react) |
+| **Font** | Sans-serif only (Inter, Segoe UI, Arial) |
+| **State** | React Context, Redux Toolkit, or Zustand |
+| **API Calls** | axios or fetch |
+| **Auth Storage** | JWT via localStorage |
+| **Form Handling** | react-hook-form (optional) |
+
+---
+
+## 📱 Responsive Design Guidelines
+
+### Breakpoints:
+- **Mobile:** <600px
+- **Tablet:** 600–1200px
+- **Desktop:** >1200px
+
+### Patterns:
+- Responsive grid layouts
+- Collapsible side nav
+- Mobile-friendly forms
+
+---
+
+## ♿ Accessibility Guidelines
+
+- **Focus States:** All interactive elements must have visible focus indicators
+- **Color Contrast:** Minimum 4.5:1 for normal text
+- **Semantic HTML:** Use proper heading hierarchy, aria-labels, and semantic elements
+
+---
+
+## 📝 Documentation Links
+
+- @Lattice.com
+- @Material UI (MUI) Docs
+- @Lucide Icons
+- @Inter Font
+- @Coolors Color Palette Generator
+
+---
+
+
+

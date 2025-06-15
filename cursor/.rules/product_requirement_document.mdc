@@ -1,0 +1,403 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Evalence – AI-Driven Performance Review Platform
+Product Requirement Document (PRD)
+
+🎯 Overview
+Evalence is a web-based, enterprise-ready platform for managing performance reviews, OKRs, and continuous feedback, enhanced with AI features. The system supports structured goal tracking, 360° reviews, feedback, analytics, and role-based access for Admin, HR, Managers, and Employees.
+The platform is designed to be cost-effective, leveraging free-tier and open-source technologies wherever possible.
+
+📌 Problem Statement
+Traditional performance reviews are often time-consuming, biased, and inconsistent. Organizations struggle to implement structured goal tracking, regular feedback, and meaningful reviews at scale. This project aims to build a comprehensive performance management system, enabling goal alignment, 360° reviews, continuous feedback, and rich analytics—enhanced by AI to improve review quality, remove friction, and drive employee growth.
+This is an enterprise-ready, AI-augmented platform that simplifies performance management for HR teams, managers, and employees.
+
+🎨 1. Branding & UI
+Logo
+
+The logo will be a simple wordmark: Evalence
+The wordmark will be designed in the modern, sleek style and color palette of lattice.com
+
+UI Theme
+
+The entire UI must reflect the brand language, color scheme, typography, and design sensibility of lattice.com
+The design should be modern, clean, and enterprise-ready, with a focus on whitespace, rounded corners, subtle gradients, and modern iconography
+Use MUI (Material UI) theming to achieve this look and feel
+
+
+👥 2. User Roles & Permissions
+Roles
+
+Admin: Highest level access
+HR: Departmental management
+Manager: Team management (can be Department Head)
+Employee: Regular user access
+
+Assignment Rules
+
+Each user has exactly one role
+Department Head: Only one manager per department can be assigned as department head (by HR)
+Role Changes: Only Admin can change user roles
+
+Permissions Matrix
+FeatureAdminHRManagerEmployeeManage Users/Departments✅✅ (assigned depts)❌❌Create Review Cycles✅❌❌❌View Org Chart✅✅✅❌Analytics Dashboard✅✅ (dept level)✅ (team level)❌Assign Goals✅✅✅ (own teams)❌View All Data✅✅ (dept)✅ (reports)Own data only
+
+🏢 3. Organization Structure
+Hierarchy
+
+Departments: Created/assigned by Admin only
+Teams: Belong to a single department
+Users: Can be in multiple teams, but only within the same department
+Manager-Report Chain: Simple manager_id field on users
+
+Org Chart
+
+Shows all users (active and inactive/former)
+Visible to Admin, HR, and Managers only
+Department head has summary view of all teams in their department
+
+
+🎯 4. Goal/OKR Management
+Goal Types
+
+Team-Specific Goals
+
+Assigned by manager to entire team
+Visible to all team members
+Can be collectively or individually owned
+Example: "Team A must complete feature X this quarter"
+
+
+Manager-Assigned Individual Goals
+
+Personal goals assigned to specific employee
+Visible only to assigned employee and their manager
+Individual ownership only
+Example: "Alice needs to improve cross-functional collaboration"
+
+
+
+Assignment Rules
+
+Goals/OKRs can be assigned at team or user level (not department)
+Department heads cannot assign goals to teams outside their direct management chain
+
+Features
+
+Tagging: Predefined, department-specific tags (managed by Admin/HR)
+Progress Tracking: Users can comment on progress and tag goals
+Team Context Separation: Goals are separated by team context for users in multiple teams
+Filtering: Tags used for filtering/searching in dashboards
+
+
+💬 5. Continuous Feedback
+Feedback Structure
+
+Type: Text-only, single-message feedback (no threads or attachments)
+Context Separation: Feedback is separated by team context
+
+Visibility Options
+
+Private: Only recipient and Admin can view
+Public: Visible to all users
+
+Features
+
+Tagging: Predefined, department-specific tags
+File Uploads: Supporting documents via Firebase Storage
+Real-time Updates: New feedback triggers real-time notifications
+
+
+📊 6. Performance Reviews (360°)
+Review Cycles
+
+Company-wide: All users except Admin participate (automatic inclusion)
+Creation: Admin only can create review cycles
+Simultaneous Cycles: Only one review cycle can run at a time
+Mid-cycle Changes: Participants/questions cannot be changed after launch
+User Changes: Users added/removed mid-cycle don't affect current cycle
+
+Review Types
+
+Self-assessments
+Peer reviews (fully anonymous)
+Manager reviews
+Upward reviews
+
+Templates
+
+Configurable and reusable
+Custom templates can be created for specific departments
+Admin/HR can assign templates to departments
+
+Anonymity Rules
+
+Peer reviews are fully anonymous (identity hidden from all, including Admin)
+Require minimum 2-3 peer reviewers per reviewee to ensure anonymity
+System does not prevent pattern recognition by managers
+
+
+⚖️ 7. Reviewer Workload Manager
+Features
+
+Managers and HR can view dashboard showing all pending review tasks assigned to each reviewer
+Enables balancing and tracking of reviewer workload across multiple people
+No extra cost; implemented as part of application logic/UI
+
+
+📈 8. Analytics & Dashboards
+Data Access Scope
+
+Employees: Own data only
+Managers: Team-level data
+HR: Department-level data
+Admin: All data
+
+Dashboard Views
+
+Team-level performance trends
+Sentiment trends over time
+OKR achievement rates
+Feedback volume, frequency, and impact
+Department head summary view with:
+
+Aggregated performance metrics across teams
+Cross-team comparison capabilities
+Department-wide sentiment trends
+Performance heatmaps
+
+
+
+Features
+
+Filtering: By department, team, role, and tags (keyword/tag-based search only)
+Export: CSV/PDF export required
+Real-time Updates: Goal updates trigger dashboard updates
+
+
+🤖 9. AI-Powered Features
+9.1 Peer Review Draft Generator
+
+"Suggest Draft" using Gemini API
+Data Input:
+
+Goal completion percentage
+Feedback history (text only)
+Project/goal tags (predefined, dept-specific)
+Self-assessment text (if submitted)
+Team context/role description
+Review template questions (optional)
+
+
+Storage: AI-generated drafts stored temporarily until submitted/discarded
+Fallback: Manual entry always available if AI unavailable
+
+9.2 Self-Assessment Summarizer
+
+Summarizes long-form self-assessment into:
+
+Key themes
+Strengths/weaknesses
+Impact statements
+
+
+
+9.3 Sentiment Analysis Engine
+
+Output: Categorical (positive/neutral/negative)
+Features:
+
+Scores sentiment
+Detects vague/ambiguous responses
+Flags inconsistencies/tone mismatches
+
+
+Audit: No logging required - temporary storage only
+
+
+🔍 10. Smart Search on Past Reviews and Feedback
+Implementation
+
+Embedding Models: Cohere API for generating text embeddings
+Processing: Embeddings generated immediately when reviews/feedback submitted
+Storage: Embeddings stored in PostgreSQL or simple in-memory structure
+Search Scope: Based on user role permissions (see Analytics section)
+
+Features
+
+Semantic search for similar feedback or reviews
+No paid vector database required (use Cohere free tier)
+
+
+📁 11. File Uploads
+Supporting Documents
+
+Users can upload supporting documents for goals, reviews, or feedback
+Storage: Firebase Storage (free tier)
+Monitoring: Usage tracked to stay within free limits
+File Types & Limits: [To be specified based on Firebase free tier constraints]
+
+
+📅 12. Calendar & Notifications
+Calendar
+
+Internal reminders only (no Google/Outlook sync)
+Users can see all review/goal deadlines in single calendar view
+Real-time Updates: Review assignments trigger calendar updates
+
+Notifications
+
+In-app only (bell icon)
+Daily notifications only (no user configuration)
+Email notifications: Not required
+Triggers: New feedback, goal updates, review assignments
+
+
+🗄️ 13. Data Management
+User Deletion
+
+When user deleted, their reviews/feedback are retained (unless Admin deletes them)
+Data Retention: Data retained until explicitly deleted by Admin
+GDPR/Export: No data export or deletion requests required
+
+Privacy
+
+Private feedback visible only to recipient and Admin
+Anonymous peer reviews maintain anonymity even from Admin
+Department heads cannot access private feedback or identify anonymous reviewers
+
+
+🌐 14. User Experience
+Platform
+
+Web app only (no PWA or native mobile)
+Onboarding: No onboarding flows, tooltips, help center, or chatbot required
+
+Team Context
+
+Users in multiple teams see unified dashboard with team-specific filters
+Context separation maintained for goals and feedback
+
+
+🔐 15. Authentication & Access Control
+Authentication
+
+JWT authentication (changed from OAuth2)
+Email Verification: Not required
+Password Reset: Standard JWT-based reset flow
+
+Access Control
+
+Org chart, analytics, and dashboards: Visible to Admin, HR, and Managers
+Employees: Can only see their own data and public feedback
+User Management: Manual user/team creation only (no CSV import or SSO)
+
+
+⚙️ 16. Technical Stack Guidance
+Frontend
+
+Framework: React + MUI (Material UI)
+Styling: Styled to match Lattice's modern brand language
+Real-time: Socket.IO for real-time updates
+
+Backend
+
+Framework: Node.js (NestJS/Express)
+Database: PostgreSQL (or SQLite for local dev)
+Real-time: Socket.IO for real-time features
+
+AI/ML Integration
+
+Gemini API: Review suggestions, summaries, and sentiment analysis
+Cohere API: Embeddings and smart search on past reviews and feedback
+
+Storage & Deployment
+
+File Storage: Firebase Storage (free tier)
+Deployment: Free-tier platforms (Vercel, Netlify, Railway, Render, Bolt)
+Authentication: JWT using open-source libraries (Passport.js, NextAuth.js)
+
+Real-time Features
+
+Triggers: New feedback, goal updates, review assignments
+No Collaboration: Real-time collaboration on review drafts not needed
+
+
+💰 17. Cost Management
+Free Tier Strategy
+
+All features designed to work within free tiers of:
+
+Firebase Storage
+Cohere API
+Gemini API
+Deployment platforms
+
+
+Monitoring: Usage tracking to avoid exceeding free tier limits
+No Paid Services: No paid services required
+
+
+🚫 18. Excluded Features
+Not Required
+
+Audit logs
+Real-time collaboration on review drafts
+Email notifications
+Mobile apps or PWA
+CSV import or SSO
+GDPR compliance features
+Help center or chatbot
+Google/Outlook calendar sync
+
+
+📋 19. Implementation Priorities
+Core Features (MVP)
+
+User management and role-based access
+Organization structure (departments, teams, manager-report chain)
+Goal/OKR management with team context separation
+Basic feedback system
+Simple review cycle creation and management
+
+Enhanced Features (V1.1)
+
+AI-powered review draft generation
+Sentiment analysis
+Smart search with embeddings
+Advanced analytics dashboard
+File upload system
+
+Advanced Features (V1.2)
+
+Reviewer workload manager
+Department head summary views
+Advanced filtering and export
+Calendar integration
+Self-assessment summarizer
+
+
+✅ Success Criteria
+Technical
+
+Platform handles multiple simultaneous users without performance degradation
+AI features work reliably within free tier limits
+Real-time updates function seamlessly
+Data integrity maintained across team context separations
+
+Business
+
+Streamlined performance review process
+Improved feedback quality through AI assistance
+Clear visibility into team and individual performance
+Cost-effective solution using free tier services
+
+User Experience
+
+Intuitive interface matching modern design standards
+Clear role-based access without confusion
+Efficient goal tracking and progress monitoring
+
+Meaningful analytics and insights
