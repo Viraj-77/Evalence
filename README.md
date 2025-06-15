@@ -15,14 +15,13 @@ Evalence is a modern, enterprise-ready platform for performance reviews, continu
 - **Database:** Use a managed PostgreSQL instance from Render (or similar cloud provider). No local Postgres installation required. Set the `DATABASE_URL` in your `.env` file using the connection string from Render's dashboard.
 
 ### Production Deployment
-- Render.com setup for both backend (Node.js) and frontend (React + MUI).
+- Render.com setup for both backend (Node.js)
+- Vercel frontend (React + MUI).
 - PostgreSQL instance on Render.
 
 ## Live Demo
-- [Demo Link – Coming Soon]
+- https://v0-evalence.vercel.app/
 
-## Screenshots / Demo Video
-- _To be added as features are built._
 
 ## Tech Stack & AI Integrations
 - **Frontend:** React, Material UI, Lucide Icons
